@@ -36,7 +36,7 @@ def get_source(url):
         print(e)
         return None
     
-
+#links only
 def scrape_google(query):
 
     query = urllib.parse.quote_plus(query)
@@ -62,6 +62,8 @@ def link_table(links):
     data_df = pd.DataFrame({"Links":links})
     st.data_editor(data_df,column_config={"Links":st.column_config.LinkColumn("Trending Links")})
 
+
+#links text and title
 def get_search_results(query):
     query = urllib.parse.quote_plus(query)
     response = get_source("https://www.google.co.uk/search?q=" + query)
@@ -77,18 +79,20 @@ def parse_results(response):
     results = response.html.find(css_identifier_result)
 
     output = []
-    
-    for result in results:
+    try:
+        for result in results:
 
-        item = {
-            'title': result.find(css_identifier_title, first=True).text,
-            'link': result.find(css_identifier_link, first=True).attrs['href'],
-            'text': result.find(css_identifier_text, first=True).text
-        }
+            item = {
+                'title': result.find(css_identifier_title, first=True).text,
+                'link': result.find(css_identifier_link, first=True).attrs['href'],
+                'text': result.find(css_identifier_text, first=True).text
+            }
         
         output.append(item)
         
-    return output
+        return output
+    except:
+        return None
 
 def google_search(query):
     response = get_search_results(query)
@@ -135,7 +139,7 @@ if st.button('Predict'):
         
         #links = scrape_google(user_input)
         #link_table(links)
-        googleres =google_search(user_input)
+        googleres = google_search(user_input)
         st.table(googleres)
 
         time.sleep(1)  # Simulate prediction
