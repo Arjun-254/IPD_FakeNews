@@ -10,10 +10,11 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 
-st.title("Fake News Detector")
-st.caption("Aimed at political artcles")
-user_input = st.text_area('Please enter your article')
+st.title("News Integrity Analyzer")
+st.caption("Aims to reduce misinformation")
+user_input = st.text_area('Please enter your article headline')
 
 vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
 
@@ -34,10 +35,9 @@ def clean_words(new_tokens):
 
 @st.cache_data
 def read_clean_data():
-    data = pd.read_csv('fake_or_real_news.csv')
-    data['fake'] = data.label.map({'FAKE': 1, 'REAL': 0})
-    X, y = data['text'], data['fake']
-    # X = [' '.join(clean_words(word_tokenize(text))) for text in X]
+    data = pd.read_csv('Liar.csv')
+    X, y = data['statement'], data['label']
+    X = [' '.join(clean_words(word_tokenize(text))) for text in X]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     return X_train, X_test, y_train, y_test
 
@@ -51,10 +51,9 @@ X_test_vectorized = vectorizer.transform(X_test)
 
 @st.cache_resource
 def load_model():
-    clf = LinearSVC()
+    clf = LogisticRegression()
     clf.fit(X_train_vectorized, y_train)
     score = clf.score(X_test_vectorized, y_test)
-    st.info(f"{score*100}% model test accuracy")
     return clf
 
 
@@ -62,14 +61,32 @@ def load_model():
 if st.button('Predict'):
     with st.spinner('Predicting....'):
 
-        time.sleep(0.5)  # Simulate prediction
+        time.sleep(1)  # Simulate prediction
         model = load_model()
-        user_input_cleaned = clean_words(word_tokenize(user_input))
-        vectorized_text = vectorizer.transform(user_input_cleaned)
+        user_input_cleaned = ' '.join(clean_words(word_tokenize(user_input)))
+
+        vectorized_text = vectorizer.transform([user_input_cleaned])
         prediction = model.predict(vectorized_text)
         # st.snow()
         st.toast("Model has run successfully")
-        if prediction[0] == 0:
-            st.success("The article is legitimate 🥳")
+
+        if prediction[0] in ['true', 'mostly-true']:
+            st.success(f"The article is classified as {prediction[0]}.🥳")
+        elif prediction[0] in ['half-true', 'barely-true']:
+            st.warning(f"The article is classified as {prediction[0]}.🤨")
         else:
-            st.error("The article is fake 🛑")
+            st.error(f"The article is classified as {prediction[0]}.🛑")
+
+
+label_explanations = {
+    'true': 'The headline is accurate and true.',
+    'mostly-true': 'The headline is mostly true with minor inaccuracies.',
+    'half-true': 'The headline is partially true and partially false.',
+    'barely-true': 'The headline is slightly true but mostly inaccurate.',
+    'false': 'The headline is not true and contains false information.',
+    'pants-fire': 'The headline contains blatant lies and false information.'
+}
+
+explanations_df = pd.DataFrame(label_explanations.items(), columns=[
+                               'label', 'explanation'])
+st.dataframe(explanations_df, hide_index=True, use_container_width=True)
