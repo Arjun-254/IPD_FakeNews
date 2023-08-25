@@ -11,6 +11,10 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
+import requests
+import urllib
+from requests_html import HTML
+from requests_html import HTMLSession
 
 st.title("News Integrity Analyzer")
 st.caption("Aims to reduce misinformation")
@@ -21,6 +25,74 @@ vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
+
+
+def get_source(url):
+    try:
+        session  = HTMLSession()
+        response = session.get(url)
+        return response
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return None
+    
+
+def scrape_google(query):
+
+    query = urllib.parse.quote_plus(query)
+    response = get_source("https://www.google.co.uk/search?q=" + query)
+
+    links = list(response.html.absolute_links)
+    google_domains = ('https://www.google.', 
+                      'https://google.', 
+                      'https://webcache.googleusercontent.', 
+                      'http://webcache.googleusercontent.', 
+                      'https://policies.google.',
+                      'https://support.google.',
+                      'https://maps.google.')
+
+    for url in links[:]:
+        if url.startswith(google_domains):
+            links.remove(url)
+
+    return links
+
+#make a streamlit link table
+def link_table(links):
+    data_df = pd.DataFrame({"Links":links})
+    st.data_editor(data_df,column_config={"Links":st.column_config.LinkColumn("Trending Links")})
+
+def get_search_results(query):
+    query = urllib.parse.quote_plus(query)
+    response = get_source("https://www.google.co.uk/search?q=" + query)
+    
+    return response
+
+def parse_results(response):
+    css_identifier_result = ".tF2Cxc"
+    css_identifier_title = "h3"
+    css_identifier_link = ".yuRUbf a"
+    css_identifier_text = ".VwiC3b"
+    
+    results = response.html.find(css_identifier_result)
+
+    output = []
+    
+    for result in results:
+
+        item = {
+            'title': result.find(css_identifier_title, first=True).text,
+            'link': result.find(css_identifier_link, first=True).attrs['href'],
+            'text': result.find(css_identifier_text, first=True).text
+        }
+        
+        output.append(item)
+        
+    return output
+
+def google_search(query):
+    response = get_search_results(query)
+    return parse_results(response)
 
 
 def clean_words(new_tokens):
@@ -60,6 +132,11 @@ def load_model():
 # Predict Button
 if st.button('Predict'):
     with st.spinner('Predicting....'):
+        
+        #links = scrape_google(user_input)
+        #link_table(links)
+        googleres =google_search(user_input)
+        st.table(googleres)
 
         time.sleep(1)  # Simulate prediction
         model = load_model()
