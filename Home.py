@@ -16,6 +16,9 @@ import urllib
 from requests_html import HTML
 from requests_html import HTMLSession
 
+st.set_page_config(layout="wide")
+
+
 st.title("News Integrity Analyzer")
 st.caption("Aims to reduce misinformation")
 user_input = st.text_area('Please enter your article headline')
@@ -29,24 +32,26 @@ nltk.download('wordnet')
 
 def get_source(url):
     try:
-        session  = HTMLSession()
+        session = HTMLSession()
         response = session.get(url)
         return response
     except requests.exceptions.RequestException as e:
         print(e)
         return None
-    
-#links only
+
+# links only
+
+
 def scrape_google(query):
 
     query = urllib.parse.quote_plus(query)
-    response = get_source("https://www.google.co.uk/search?q=" + query)
+    response = get_source("https://www.google.com/search?q=" + query)
 
     links = list(response.html.absolute_links)
-    google_domains = ('https://www.google.', 
-                      'https://google.', 
-                      'https://webcache.googleusercontent.', 
-                      'http://webcache.googleusercontent.', 
+    google_domains = ('https://www.google.',
+                      'https://google.',
+                      'https://webcache.googleusercontent.',
+                      'http://webcache.googleusercontent.',
                       'https://policies.google.',
                       'https://support.google.',
                       'https://maps.google.')
@@ -57,25 +62,29 @@ def scrape_google(query):
 
     return links
 
-#make a streamlit link table
+# make a streamlit link table
+
+
 def link_table(links):
-    data_df = pd.DataFrame({"Links":links})
-    st.data_editor(data_df,column_config={"Links":st.column_config.LinkColumn("Trending Links")})
+    data_df = pd.DataFrame({"Links": links})
+    st.data_editor(data_df, column_config={
+                   "Links": st.column_config.LinkColumn("Trending Links")})
 
 
-#links text and title
+# links text and title
 def get_search_results(query):
     query = urllib.parse.quote_plus(query)
-    response = get_source("https://www.google.co.uk/search?q=" + query)
-    
+    response = get_source("https://www.google.com/search?q=" + query)
+
     return response
+
 
 def parse_results(response):
     css_identifier_result = ".tF2Cxc"
     css_identifier_title = "h3"
     css_identifier_link = ".yuRUbf a"
     css_identifier_text = ".VwiC3b"
-    
+
     results = response.html.find(css_identifier_result)
 
     output = []
@@ -87,12 +96,13 @@ def parse_results(response):
                 'link': result.find(css_identifier_link, first=True).attrs['href'],
                 'text': result.find(css_identifier_text, first=True).text
             }
-        
-        output.append(item)
-        
+
+            output.append(item)
+
         return output
     except:
         return None
+
 
 def google_search(query):
     response = get_search_results(query)
@@ -136,11 +146,9 @@ def load_model():
 # Predict Button
 if st.button('Predict'):
     with st.spinner('Predicting....'):
-        
-        #links = scrape_google(user_input)
-        #link_table(links)
-        googleres = google_search(user_input)
-        st.table(googleres)
+
+        # links = scrape_google(user_input)
+        # link_table(links)
 
         time.sleep(1)  # Simulate prediction
         model = load_model()
@@ -158,16 +166,24 @@ if st.button('Predict'):
         else:
             st.error(f"The article is classified as {prediction[0]}.🛑")
 
+        label_explanations = {
+            'true': 'The headline is accurate and true.',
+            'mostly-true': 'The headline is mostly true with minor inaccuracies.',
+            'half-true': 'The headline is partially true and partially false.',
+            'barely-true': 'The headline is slightly true but mostly inaccurate.',
+            'false': 'The headline is not true and contains false information.',
+            'pants-fire': 'The headline contains blatant lies and false information.'
+        }
 
-label_explanations = {
-    'true': 'The headline is accurate and true.',
-    'mostly-true': 'The headline is mostly true with minor inaccuracies.',
-    'half-true': 'The headline is partially true and partially false.',
-    'barely-true': 'The headline is slightly true but mostly inaccurate.',
-    'false': 'The headline is not true and contains false information.',
-    'pants-fire': 'The headline contains blatant lies and false information.'
-}
+        st.subheader("Output Scale")
+        explanations_df = pd.DataFrame(label_explanations.items(), columns=[
+            'label', 'explanation'])
+        st.dataframe(explanations_df, hide_index=True,
+                     use_container_width=True)
 
-explanations_df = pd.DataFrame(label_explanations.items(), columns=[
-                               'label', 'explanation'])
-st.dataframe(explanations_df, hide_index=True, use_container_width=True)
+    st.subheader("Related News")
+
+    with st.spinner('Scraping Reviews'):
+        googleres = google_search(user_input)
+
+        st.dataframe(googleres, hide_index=True, use_container_width=True)
