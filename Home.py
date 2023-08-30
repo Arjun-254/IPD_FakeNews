@@ -185,5 +185,7 @@ if st.button('Predict'):
 
     with st.spinner('Scraping Reviews'):
         googleres = google_search(user_input)
-
-        st.dataframe(googleres, hide_index=True, use_container_width=True)
+        if googleres is not None:
+            st.dataframe(googleres, hide_index=True, use_container_width=True)
+        else:
+            st.error("No related articles found")
