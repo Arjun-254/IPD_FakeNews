@@ -49,5 +49,5 @@ if st.button('Predict'):
     # Display the sorted probabilities for each class
     st.subheader("Class Probabilities:")
     for class_label, prob in sorted_probs:
-        st.write(f"{class_label}: {prob * 100:.2f}%")
+        st.write(f"{class_label}: {prob * 100}%")
         st.progress(prob)

@@ -23,7 +23,7 @@ def predict_fake(title, text):
 
 
 # Streamlit App
-st.title("Binary Classification (BERT)")
+st.title("Binary Classification (ROBERTA)")
 
 # Input Fields
 title_input = st.text_input("Enter Title")
