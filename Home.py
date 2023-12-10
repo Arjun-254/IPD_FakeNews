@@ -5,7 +5,6 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 import time
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -15,6 +14,7 @@ import requests
 import urllib
 from requests_html import HTML
 from requests_html import HTMLSession
+import requests
 
 st.set_page_config(layout="wide")
 
@@ -25,88 +25,32 @@ user_input = st.text_area('Please enter your article headline')
 
 vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
 
+# Set your News API key
+env = '9ba9a80fa8a74e00b67d7ddbf2411054'
 
-def get_source(url):
+def NewsScrape(query):
     try:
-        session = HTMLSession()
-        response = session.get(url)
-        return response
-    except requests.exceptions.RequestException as e:
+        # Make a request to the News API
+        url = f'https://newsapi.org/v2/everything?q={query}&apiKey={env}'
+        response = requests.get(url)
+        news_data = response.json()
+
+        # Parse and return the news results
+        articles = news_data.get('articles', [])
+        results = []
+        for article in articles:
+            item = {
+                'title': article.get('title', ''),
+                'link': article.get('url', ''),
+                'text': article.get('description', '')
+            }
+            results.append(item)
+
+        return results
+    except Exception as e:
         print(e)
         return None
-
-# links only
-
-
-def scrape_google(query):
-
-    query = urllib.parse.quote_plus(query)
-    response = get_source("https://www.google.com/search?q=" + query)
-
-    links = list(response.html.absolute_links)
-    google_domains = ('https://www.google.',
-                      'https://google.',
-                      'https://webcache.googleusercontent.',
-                      'http://webcache.googleusercontent.',
-                      'https://policies.google.',
-                      'https://support.google.',
-                      'https://maps.google.')
-
-    for url in links[:]:
-        if url.startswith(google_domains):
-            links.remove(url)
-
-    return links
-
-# make a streamlit link table
-
-
-def link_table(links):
-    data_df = pd.DataFrame({"Links": links})
-    st.data_editor(data_df, column_config={
-                   "Links": st.column_config.LinkColumn("Trending Links")})
-
-
-# links text and title
-def get_search_results(query):
-    query = urllib.parse.quote_plus(query)
-    response = get_source("https://www.google.com/search?q=" + query)
-
-    return response
-
-
-def parse_results(response):
-    css_identifier_result = ".tF2Cxc"
-    css_identifier_title = "h3"
-    css_identifier_link = ".yuRUbf a"
-    css_identifier_text = ".VwiC3b"
-
-    results = response.html.find(css_identifier_result)
-
-    output = []
-    try:
-        for result in results:
-
-            item = {
-                'title': result.find(css_identifier_title, first=True).text,
-                'link': result.find(css_identifier_link, first=True).attrs['href'],
-                'text': result.find(css_identifier_text, first=True).text
-            }
-
-            output.append(item)
-
-        return output
-    except:
-        return None
-
-
-def google_search(query):
-    response = get_search_results(query)
-    return parse_results(response)
 
 
 def clean_words(new_tokens):
@@ -130,20 +74,19 @@ def read_clean_data():
 
 X_train, X_test, y_train, y_test = read_clean_data()
 
-X_train_vectorized = vectorizer.fit_transform(
-    X_train)  # Fit the vectorizer once
+X_train_vectorized = vectorizer.fit_transform(X_train)  # Fit the vectorizer once
 X_test_vectorized = vectorizer.transform(X_test)
 
 
 @st.cache_resource
 def load_model():
-    clf = LogisticRegression()
+    clf = LogisticRegression(max_iter =1000)
     clf.fit(X_train_vectorized, y_train)
     score = clf.score(X_test_vectorized, y_test)
     return clf
 
 
-# Predict Button
+
 if st.button('Predict'):
     with st.spinner('Predicting....'):
 
@@ -195,7 +138,7 @@ if st.button('Predict'):
     st.subheader("Related News")
 
     with st.spinner('Scraping Reviews'):
-        googleres = google_search(user_input)
+        googleres = NewsScrape(user_input)
         if googleres is not None:
             st.dataframe(googleres, hide_index=True, use_container_width=True)
         else:
