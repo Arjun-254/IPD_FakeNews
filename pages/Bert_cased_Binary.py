@@ -1,11 +1,12 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import streamlit as st
 from scrapingbsf import make_data
+
 # Load model directly
 tokenizer = AutoTokenizer.from_pretrained(
-    "Arjun24420/DistilBERT-FakeOrReal-BinaryClassification")
+    "Arjun24420/FakeNews-BERT-base-cased")
 model = AutoModelForSequenceClassification.from_pretrained(
-    "Arjun24420/DistilBERT-FakeOrReal-BinaryClassification")
+    "Arjun24420/FakeNews-BERT-base-cased")
 
 
 def predict(text):
@@ -31,7 +32,7 @@ class_mapping = {
 }
 
 # Streamlit App
-st.title("Binary Classification (DistilBERT-FakeOrReal)")
+st.title("Binary Classification (BERT-base-cased)")
 
 title_input = st.text_input("Enter Title")
 text_input = st.text_area("Enter Text")
