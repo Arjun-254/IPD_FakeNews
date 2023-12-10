@@ -12,15 +12,12 @@ def get_top_links(query, num_links=10):
         # Print the top links
         print(f"Top {num_links} links for '{query}':")
         for i, link in enumerate(search_results, start=1):
-            print(f"{i}. {link}")
             linksgot.append(link)
     except Exception as e:
         print(f"An error occurred: {e}")
     return linksgot
 
 # Example usage:
-query_to_search = "Sam Altman Was fired From OpenAI"
-search_query_results = get_top_links(query_to_search)
 
 # Scrape <p> and <h1> tags from the first search result
 def get_title_and_content(search_query_results):
@@ -57,8 +54,8 @@ def get_title_and_content(search_query_results):
 
 
 # Get the titles and contents
-def get_title_and_content(search_query_results):
-    titles, contents = get_title_and_content(search_query_results)
+def make_data(search_query_results):
+    titles, contents = get_title_and_content(get_top_links(search_query_results))
 
     # Create a pandas DataFrame
     data = {'Title': titles, 'Content': contents}

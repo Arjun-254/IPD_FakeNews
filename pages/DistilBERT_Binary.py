@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import streamlit as st
-
+from scrapingbsf import make_data
 # Load model directly
 tokenizer = AutoTokenizer.from_pretrained(
     "Arjun24420/DistilBERT-FakeOrReal-BinaryClassification")
@@ -36,6 +36,11 @@ st.title("Binary Classification (DistilBERT-FakeOrReal)")
 title_input = st.text_input("Enter Title")
 text_input = st.text_area("Enter Text")
 
+if st.button('Scrape'):
+    scraped_title = make_data(title_input).iloc[1]['Title']
+    scraped_content = make_data(title_input).iloc[1]['Content']
+    st.write(scraped_title)
+    st.write(scraped_content)
 # Predict Button
 if st.button('Predict'):
     text_input = "<title>" + title_input + "<content>" + text_input + "<end>"
