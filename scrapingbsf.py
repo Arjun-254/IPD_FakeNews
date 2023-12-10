@@ -57,14 +57,13 @@ def get_title_and_content(search_query_results):
 
 
 # Get the titles and contents
-titles, contents = get_title_and_content(search_query_results)
+def get_title_and_content(search_query_results):
+    titles, contents = get_title_and_content(search_query_results)
 
-# Create a pandas DataFrame
-data = {'Title': titles, 'Content': contents}
-df = pd.DataFrame(data)
-
-# Print the DataFrame
-print(df)
+    # Create a pandas DataFrame
+    data = {'Title': titles, 'Content': contents}
+    df = pd.DataFrame(data)
+    return df
 
 
 
