@@ -19,7 +19,7 @@ from requests_html import HTMLSession
 st.set_page_config(layout="wide")
 
 
-st.title("News Integrity Analyzer")
+st.title("News Integrity Analyzer (Logistic Regression)")
 st.caption("Aims to reduce misinformation")
 user_input = st.text_area('Please enter your article headline')
 
@@ -174,6 +174,17 @@ if st.button('Predict'):
             'false': 'The headline is not true and contains false information.',
             'pants-fire': 'The headline contains blatant lies and false information.'
         }
+        label_confidences = {
+            'true': 0.99,
+            'mostly-true': 0.80,
+            'half-true': 0.60,
+            'barely-true': 0.40,
+            'false': 0.20,
+            'pants-fire': 0.01
+        }
+        confidence = label_confidences[prediction[0]]
+        progress = int(confidence * 100)
+        st.progress(progress)
 
         st.subheader("Output Scale")
         explanations_df = pd.DataFrame(label_explanations.items(), columns=[
