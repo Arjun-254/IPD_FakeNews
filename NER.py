@@ -1,5 +1,7 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
+import streamlit as st
+
 
 tagger = SequenceTagger.load("flair/ner-english-ontonotes-large")
 
@@ -15,7 +17,8 @@ print(sentence)
 
 # print predicted NER spans
 print('The following NER tags are found:')
-
-# iterate over entities and print
-for entity in sentence.get_spans('ner'):
-    print(entity)
+tags = sentence.get_spans('ner')
+print(tags)
+# # iterate over entities and print
+# for entity in sentence.get_spans('ner'):
+#     print(entity)

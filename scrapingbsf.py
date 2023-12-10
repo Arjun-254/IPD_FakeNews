@@ -11,7 +11,6 @@ def get_top_links(query, num_links=1):
         search_results = search(query, num_results=num_links)
 
         # Print the top links
-        print(f"Top {num_links} links for '{query}':")
         for i, link in enumerate(search_results, start=1):
             linksgot.append(link)
     except Exception as e:
