@@ -37,10 +37,9 @@ title_input = st.text_input("Enter Title")
 text_input = st.text_area("Enter Text")
 
 if st.button('Scrape'):
-    scraped_title = make_data(title_input).iloc[1]['Title']
-    scraped_content = make_data(title_input).iloc[1]['Content']
-    st.write(scraped_title)
-    st.write(scraped_content)
+    scraped_df = make_data(title_input)
+    scraped_df.dropna(inplace=True)
+    st.dataframe(scraped_df)
 # Predict Button
 if st.button('Predict'):
     text_input = "<title>" + title_input + "<content>" + text_input + "<end>"
