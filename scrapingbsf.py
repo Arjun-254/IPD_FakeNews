@@ -1,6 +1,7 @@
 from googlesearch import search
 from bs4 import BeautifulSoup
 import requests
+import pandas as pd
 
 def get_top_links(query, num_links=10):
     linksgot =[]
@@ -32,18 +33,38 @@ def get_title_and_content(search_query_results):
                 response = requests.get(results)
                 soup = BeautifulSoup(response.content, 'html.parser')
 
+
+                currentp=""
                 # Scrape <p> tags
                 p_tags = soup.find_all('p')
                 for p in p_tags:
-                    article_content.append(p.text)
+                    currentp+=p.text
+                article_content.append(currentp)
 
+
+                currenth1=""
                 # Scrape <h1> tags
                 h1_tags = soup.find_all('h1')
                 for h1 in h1_tags:
-                    article_titles.append(h1.text)
+                   currenth1+=h1.text
+
+                article_titles.append(currenth1)
+
+                
             except Exception as e:
                 print(f"An error occurred: {e}")
     return article_titles, article_content
+
+
+# Get the titles and contents
+titles, contents = get_title_and_content(search_query_results)
+
+# Create a pandas DataFrame
+data = {'Title': titles, 'Content': contents}
+df = pd.DataFrame(data)
+
+# Print the DataFrame
+print(df)
 
 
 
