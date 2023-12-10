@@ -15,6 +15,7 @@ import urllib
 from requests_html import HTML
 from requests_html import HTMLSession
 import requests
+from NewsScrape import NewsScrape
 
 st.set_page_config(layout="wide")
 
@@ -26,31 +27,7 @@ user_input = st.text_area('Please enter your article headline')
 vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
 
 
-# Set your News API key
-env = '9ba9a80fa8a74e00b67d7ddbf2411054'
 
-def NewsScrape(query):
-    try:
-        # Make a request to the News API
-        url = f'https://newsapi.org/v2/everything?q={query}&apiKey={env}'
-        response = requests.get(url)
-        news_data = response.json()
-
-        # Parse and return the news results
-        articles = news_data.get('articles', [])
-        results = []
-        for article in articles:
-            item = {
-                'title': article.get('title', ''),
-                'link': article.get('url', ''),
-                'text': article.get('description', '')
-            }
-            results.append(item)
-
-        return results
-    except Exception as e:
-        print(e)
-        return None
 
 
 def clean_words(new_tokens):
