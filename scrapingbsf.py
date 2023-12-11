@@ -30,7 +30,7 @@ def get_title_and_content(search_query_results):
             try:
                 # Send a request to the URL and get the HTML content
                 response = requests.get(results)
-                soup = BeautifulSoup(response.content, 'html.parser')
+                soup = BeautifulSoup(response.content, 'lxml')
 
                 currentp = ""
                 # Scrape <p> tags
