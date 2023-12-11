@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 
 
-def get_top_links(query, num_links=1):
+def get_top_links(query, num_links=3):
     linksgot = []
     try:
         # Perform Google search and get the top links
