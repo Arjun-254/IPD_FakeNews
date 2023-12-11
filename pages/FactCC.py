@@ -39,7 +39,7 @@ if st.button("Classify"):
 
     # Display the result
     if ans[0]['label'] == 'INCORRECT':
-        ans[0]['score'] = 1 - ans[0]['score']   
+        ans[0]['score'] = 1 - ans[0]['score']
     st.subheader("Classification Result")
     st.text("Correctness: " + str(ans[0]['score']))
     st.progress(ans[0]['score'])
