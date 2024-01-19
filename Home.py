@@ -19,6 +19,8 @@ import requests
 from NewsScrape import NewsScrape
 
 nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 st.set_page_config(layout="wide")
 
